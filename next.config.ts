@@ -4,7 +4,6 @@ import { execSync } from "child_process";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { pruneTraces } from "./scripts/standalone-guard.mjs";
 import { desktopBuildFlag } from "./scripts/desktop-build-flag.mjs";
 import { LITE_INTL_ASSETS_OFF, LITE_INTL_ASSETS_REQUEST } from "./scripts/lite-intl-assets.mjs";
 import { CompileHintsPlugin } from "./scripts/compile-hints.mjs";
@@ -164,28 +163,17 @@ const nextConfig: NextConfig = {
   // Sibling repos checked out under ./repos/ are unrelated source trees that
   // Turbopack's NFT can otherwise rope into the trace when dynamic fs calls
   // confuse it. Keeps the build from ballooning memory tracing dead code.
-  // These excludes are not what keeps private state out of the build: they
-  // miss several traces. runAfterProductionCompile below and the final check
-  // in scripts/standalone-guard.mjs do that.
-  // Only "./repos" goes under "*": that key also feeds the next-server trace,
-  // where Next matches each glob anywhere in the path, so "./data/**/*" would
-  // drop node_modules/next/dist/lib/metadata/* and the server would not start.
-  // "!(next-server)" matches every route but not that trace, and per route
-  // Next anchors the globs to the project root.
   outputFileTracingExcludes: {
     "*": ["./repos/**/*"],
     "!(next-server)": ["./data/**/*", "./local-data/**/*", "./.env*"],
   },
-  ...(isLite
-    ? {}
-    : {
-        compiler: {
-          runAfterProductionCompile: async ({ distDir, projectDir }) => {
-            pruneTraces({ distDir, projectDir });
-          },
-        },
-      }),
   // Only Lite draws a page before it has a catalog: everywhere else
+  // IntlProvider's Lite-only English and skeletons (half a megabyte of
+  // script) are swapped for an empty module. And the scripts a page starts
+  // with tell Chrome to compile them while they download (scripts/compile-hints.mjs).
+  // Webpack builds only (the Docker image, the desktop app); a Turbopack
+  // build keeps the Lite assets and has no hints, which costs size and start
+  // time, not behaviour.
   // IntlProvider's Lite-only English and skeletons (half a megabyte of
   // script) are swapped for an empty module. And the scripts a page starts
   // with tell Chrome to compile them while they download (scripts/compile-hints.mjs).

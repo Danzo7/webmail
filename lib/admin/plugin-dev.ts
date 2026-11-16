@@ -80,7 +80,7 @@ function resolveBundlePath(pluginDir: string, entrypoint: string): ResolvedBundl
     [path.join(pluginDir, 'dist', entrypoint), false],
   ];
   for (const [candidate, needsBundle] of candidates) {
-    if (isInside(pluginDir, candidate) && existsSync(candidate)) return { bundlePath: candidate, needsBundle };
+    if (isInside(pluginDir, candidate) && existsSync(/*turbopackIgnore: true*/ candidate)) return { bundlePath: candidate, needsBundle };
   }
   return null;
 }
@@ -190,7 +190,7 @@ async function loadDevPlugin(pluginDir: string): Promise<DevPluginEntry | null> 
   try {
     const bytes = resolved.needsBundle
       ? await bundleEntrypoint(resolved.bundlePath)
-      : await readFile(resolved.bundlePath);
+      : await readFile(/*turbopackIgnore: true*/ resolved.bundlePath);
     bundleHash = createHash('sha256').update(bytes).digest('hex');
   } catch (err) {
     logger.warn(`[plugin-dev] failed to hash bundle at ${resolved.bundlePath} for ${id}`, {
@@ -201,7 +201,7 @@ async function loadDevPlugin(pluginDir: string): Promise<DevPluginEntry | null> 
 
   let installedAt = new Date().toISOString();
   try {
-    const stats = await stat(resolved.bundlePath);
+    const stats = await stat(/*turbopackIgnore: true*/ resolved.bundlePath);
     installedAt = stats.mtime.toISOString();
   } catch {
     /* ignore */
@@ -239,7 +239,7 @@ export async function listDevPlugins(): Promise<DevPluginEntry[]> {
 
   let entries: string[];
   try {
-    entries = await readdir(dir);
+    entries = await readdir(/*turbopackIgnore: true*/ dir);
   } catch (error) {
     logger.warn('Failed to read PLUGIN_DEV_DIR', {
       dir,
@@ -251,9 +251,9 @@ export async function listDevPlugins(): Promise<DevPluginEntry[]> {
   const out: DevPluginEntry[] = [];
   for (const name of entries) {
     if (name.startsWith('.') || name === 'node_modules') continue;
-    const fullPath = path.join(dir, name);
+    const fullPath = path.join(/*turbopackIgnore: true*/ dir, name);
     let isDir = false;
-    try { isDir = (await stat(fullPath)).isDirectory(); } catch { continue; }
+    try { isDir = (await stat(/*turbopackIgnore: true*/ fullPath)).isDirectory(); } catch { continue; }
     if (!isDir) continue;
 
     const entry = await loadDevPlugin(fullPath);

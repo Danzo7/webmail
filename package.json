@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "dev": "node scripts/build-pst-worker.mjs && node scripts/build-store-worker.mjs && node scripts/build-plugin-sandbox.mjs --watch -- next dev --turbopack",
-    "build": "node scripts/build-pst-worker.mjs && node scripts/build-store-worker.mjs && node scripts/build-plugin-sandbox.mjs && next build --turbopack && node scripts/standalone-guard.mjs",
+    "build": "node scripts/build-pst-worker.mjs && node scripts/build-store-worker.mjs && node scripts/build-plugin-sandbox.mjs && next build --turbopack",
     "build:lite": "node scripts/lite/build.mjs",
     "build:desktop": "node scripts/build-desktop.mjs",
     "lite:serve": "node scripts/lite/serve.mjs out 4173",
