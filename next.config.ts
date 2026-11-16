@@ -4,9 +4,36 @@ import { execSync } from "child_process";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { desktopBuildFlag } from "./scripts/desktop-build-flag.mjs";
-import { LITE_INTL_ASSETS_OFF, LITE_INTL_ASSETS_REQUEST } from "./scripts/lite-intl-assets.mjs";
-import { CompileHintsPlugin } from "./scripts/compile-hints.mjs";
+
+// Inlined from scripts to avoid runtime dependency
+const desktopBuildFlag = () => process.env.NEXT_PUBLIC_BULWARK_DESKTOP === '1' ? '1' : '';
+const LITE_INTL_ASSETS_REQUEST = /[\\/]lib[\\/]lite-intl-assets\.tsx$/;
+const LITE_INTL_ASSETS_OFF = join(import.meta.dirname, 'lib', 'lite-intl-assets-off.tsx');
+
+// Inlined CompileHintsPlugin
+class CompileHintsPlugin {
+  constructor(webpack: any) {
+    this.webpack = webpack;
+  }
+  webpack: any;
+  apply(compiler: any) {
+    const { Compilation, sources } = this.webpack;
+    compiler.hooks.thisCompilation.tap('CompileHintsPlugin', (compilation: any) => {
+      compilation.hooks.processAssets.tap(
+        { name: 'CompileHintsPlugin', stage: Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_SIZE + 1 },
+        () => {
+          for (const chunk of compilation.chunks) {
+            if (!chunk.canBeInitial()) continue;
+            for (const file of chunk.files) {
+              if (!file.endsWith('.js')) continue;
+              compilation.updateAsset(file, (source: any) => new sources.ConcatSource('//# allFunctionsCalledOnLoad\n', source));
+            }
+          }
+        },
+      );
+    });
+  }
+}
 
 
 let appVersion = "1.21.2";
