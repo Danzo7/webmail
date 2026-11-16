@@ -25,7 +25,7 @@ let appVersion = "1.21.2";
 const buildSeed = process.env.BULWARK_BUILD_SEED?.trim();
 if (!process.env.BULWARK_BUILD_ID) {
   process.env.BULWARK_BUILD_ID = createHash("sha256")
-    .update(buildSeed ? `seed:${buildSeed}` : `${gitCommitHash}:${appVersion}:${Date.now()}:${Math.random()}`)
+    .update(buildSeed ? `seed:${buildSeed}` : `${appVersion}:${Date.now()}:${Math.random()}`)
     .digest("base64url")
     .slice(0, 16);
 }
@@ -206,7 +206,6 @@ const nextConfig: NextConfig = {
     ...(sourceMaps ? { debugIds: true } : {}),
   },
   env: {
-    NEXT_PUBLIC_GIT_COMMIT: gitCommitHash,
     NEXT_PUBLIC_BUILD_ID: buildId,
     // A dev server may announce another version, e.g. to try a plugin that needs the next release.
     NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION || appVersion,
