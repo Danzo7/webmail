@@ -9,28 +9,9 @@ import { desktopBuildFlag } from "./scripts/desktop-build-flag.mjs";
 import { LITE_INTL_ASSETS_OFF, LITE_INTL_ASSETS_REQUEST } from "./scripts/lite-intl-assets.mjs";
 import { CompileHintsPlugin } from "./scripts/compile-hints.mjs";
 
-// Prefer an explicit build arg (passed in by CI / Docker, where .git is
-// excluded from the build context) and fall back to `git rev-parse` for
-// local builds.
-let gitCommitHash = process.env.GIT_COMMIT?.trim() || "";
-if (!gitCommitHash) {
-  try {
-    gitCommitHash = execSync("git rev-parse --short HEAD").toString().trim();
-  } catch {
-    gitCommitHash = "unknown";
-  }
-}
-// Normalise full 40-char SHAs (e.g. ${{ github.sha }}) to the short form.
-if (/^[0-9a-f]{40}$/i.test(gitCommitHash)) {
-  gitCommitHash = gitCommitHash.slice(0, 7);
-}
 
-let appVersion = "0.0.0";
-try {
-  appVersion = readFileSync(join(import.meta.dirname, "VERSION"), "utf-8").trim();
-} catch {
-  // VERSION file not found
-}
+let appVersion = "1.21.2";
+
 
 // One id per build (#523): the service worker names its caches after it, and
 // open tabs compare it with /api/version to learn that a new build was
@@ -87,7 +68,6 @@ if (isLite && localePrefix !== "always") {
 const sourceMaps = process.env.BULWARK_SOURCE_MAPS === "1";
 
 const nextConfig: NextConfig = {
-  output: isLite ? "export" : "standalone",
   productionBrowserSourceMaps: sourceMaps,
   // No `X-Powered-By: Next.js`; headers() below sends
   // `X-Powered-By: bulwarkmail.org` instead, without a version.

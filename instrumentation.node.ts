@@ -11,10 +11,8 @@ import { importLocalData } from "./lib/shared-store/import";
 import { exportSharedData } from "./lib/shared-store/export";
 import { logger, isJsonLogFormat } from "./lib/logger";
 
-const pkg = JSON.parse(
-  readFileSync(`${process.cwd()}/package.json`, "utf-8")
-);
-const current: string = pkg.version ?? "0.0.0";
+
+const current: string = "1.21.2";
 logger.info(`Bulwark Webmail v${current}`, { version: current });
 
 // Prometheus metrics, only with METRICS_TOKEN(_FILE): count every request
