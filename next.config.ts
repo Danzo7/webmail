@@ -174,12 +174,6 @@ const nextConfig: NextConfig = {
   // Webpack builds only (the Docker image, the desktop app); a Turbopack
   // build keeps the Lite assets and has no hints, which costs size and start
   // time, not behaviour.
-  // IntlProvider's Lite-only English and skeletons (half a megabyte of
-  // script) are swapped for an empty module. And the scripts a page starts
-  // with tell Chrome to compile them while they download (scripts/compile-hints.mjs).
-  // Webpack builds only (the Docker image, the desktop app); a Turbopack
-  // build keeps the Lite assets and has no hints, which costs size and start
-  // time, not behaviour.
   webpack: (config, { webpack, isServer, dev }) => {
     if (!isLite) {
       config.plugins.push(new webpack.NormalModuleReplacementPlugin(LITE_INTL_ASSETS_REQUEST, (resource: { request: string }) => {
